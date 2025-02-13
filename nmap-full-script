@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Definir la dirección de destino
+target="$1"
+
+# Validar que se haya proporcionado un argumento
+if [ -z "$target" ]; then
+    echo "Falta un argumento, uso: $0 <IP o dominio>"
+    exit 1
+fi
+
+# Nombre del archivo de salida en formato XML
+xml_output="nmap_scan-${1}.xml"
+
+# Nombre del archivo de salida en formato HTML
+html_output="nmap_scan-${1}.html"
+
+# Descargar la hoja de estilos si no existe
+if [ ! -f nmap-bootstrap.xsl ]; then
+    echo "Descargando la hoja de estilos..."
+    curl -O https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl
+fi
+
+# Ejecutar nmap con escaneo de todos los puertos y salida en XML
+echo "Ejecutando escaneo Nmap..."
+nmap -p- -sV -sC -O -sS -oX $xml_output $target
+
+echo "Convirtiendo a HTML..."
+xsltproc nmap-bootstrap.xsl $xml_output -o $html_output
+
+echo "Escaneo finalizado. Reporte disponible en $html_output"
